@@ -117,7 +117,7 @@ fun MongoDbBoard.overidePiece(piece: Char, atX: Char, atY: Char):MongoDbBoard{
         println(8 - (atY.code-48))
         val newboard = board.copy(actionState = Commands.VALID)
         newboard.alterpieceat(atIndex(atX.code - 97, 8 - (atY.code-48)),
-            board.getPieceAt(atIndex(atX.code - 97, 8 - (atY.code-48)))!!.copy(piece=piece))
+            Piece(piece,board.turn,false, mutableSetOf()))
         //board.updatemoves
         return copy(board = newboard)
     }
