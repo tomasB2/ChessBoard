@@ -42,11 +42,13 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     val listOfBoard = remember{mutableStateOf(LinkedList<String>())}
 
     val listIndex = remember { mutableStateOf(value = 0) }
-    LaunchedEffect(board.value.board.actionState!=Commands.INVALID &&board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
+    LaunchedEffect(board.value.board.actionState!=Commands.PROMOTE && board.value.board.actionState!=Commands.INVALID
+            &&board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
         println("Launching effect")
+        println(board.value.board.actionState)
         while (true) {
-            println("${board.value.board.currentGame_String}")
-            if (board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
+            println(board.value.board.currentGame_String)
+            if (board.value.board.actionState!=Commands.PROMOTE && board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
                 board.value = board.value.refresh()
             }
             delay(1_000)
@@ -116,13 +118,12 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     fun join(): (String) -> Boolean = {
         newGame()
         board.value=board.value.join(it)
-        if(board.value.board.currentgame_state == "open"){
+        if(board.value.board.currentgame_state == "currentgames"){
             displayState.value = "play"
             true
         }
         else false
     }
-
     MaterialTheme {
         Row {
             when(displayState.value){

@@ -11,10 +11,8 @@ data class MongoDbBoard(var board:BoardClass,
             return if(id == null || dbOperations.read("open",id)!=null) return this
             else {
                 dbOperations.post("open", GameState(id,""))
-                /* board.currentGameid = id
-                 board.myTeam= Team.WHITE
-                 board.currentgame_state = "open"*/
-                copy(board=board.copy(currentGameid = id,team = Team.WHITE,currentgame_state = "open"))
+                dbOperations.post("currentgames", GameState(id,"  "))
+                        copy(board=board.copy(currentGameid = id,team = Team.WHITE,currentgame_state = "open"))
             }
       /*  }catch (e:BoardAccessException){
             throw  BoardAccessException(e)
@@ -44,6 +42,7 @@ data class MongoDbBoard(var board:BoardClass,
         }
         val a = dbOperations.read(board.currentgame_state,board.currentGameid)!!.movement
         val string = a.split(" ")
+        if (string[string.lastIndex-1].isEmpty())return this
         println(string)
         var newpiece=string[string.lastIndex-1][0]
         val lessString= if (string[string.lastIndex-1].length==6){
@@ -53,9 +52,10 @@ data class MongoDbBoard(var board:BoardClass,
         else string[string.lastIndex-1]
         val b = sanitiseString(lessString,board) ?: return copy(board=board.copy(actionState = Commands.INVALID))
         val newboard= board.makeMove(b,callFunc.REFRESH)
-        copy(board=newboard).overidePiece(newpiece,lessString[1],lessString[2])//nova peça, promote interino
-        addToGameString(b,callFunc.REFRESH,if (newpiece==lessString[0])null else newpiece)
-        return copy(board=newboard)
+        //nova peça, promote interino
+        println("piece"+ newpiece )
+        return copy(board=newboard).overidePiece(newpiece,lessString[1],lessString[2]).addToGameString(b,callFunc.REFRESH,if (newpiece==lessString[0])null else newpiece)
+
     }
 
 }
@@ -63,53 +63,31 @@ fun MongoDbBoard.addToGameString(move: Move, func: callFunc,piece: Char?):MongoD
     var newboard = board
     if (board.actionState == Commands.WIN) newboard = board.copy(turn = board.turn.next())
     if (func == callFunc.PLAY) {
-        if (newboard.firstMove) {
-            if (piece == null) {
-                newboard = newboard.copy(
-                    currentGame_String = "${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}" +
-                            "${'a'.plus(move.to.x)}${8 - move.to.y} ",
-                    currentgame_state = "currentgames",
-                    firstMove = false
-                )
-                dbOperations.post(
-                    newboard.currentgame_state,
-                    GameState(newboard.currentGameid, newboard.currentGame_String)
-                )
-            } else {
-                newboard = newboard.copy(
-                    currentGame_String = "${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}" +
-                            "${'a'.plus(move.to.x)}${8 - move.to.y}$piece ",
-                    currentgame_state = "currentgames",
-                    firstMove = false
-                )
-                dbOperations.post(
-                    newboard.currentgame_state,
-                    GameState(newboard.currentGameid, newboard.currentGame_String)
-                )
-            }
+        if (piece == null) {
+            newboard = newboard.copy(
+                currentGame_String = "${board.currentGame_String} ${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}" +
+                        "${'a'.plus(move.to.x)}${8 - move.to.y} ",
+                currentgame_state = "currentgames",
+                firstMove = false
+            )
+            dbOperations.put(
+                newboard.currentgame_state,
+                GameState(newboard.currentGameid, newboard.currentGame_String)
+            )
         } else {
-            if (piece == null) {
-                newboard = newboard.copy(
-                    currentGame_String = newboard.currentGame_String +
-                            "${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}${'a'.plus(move.to.x)}${8 - move.to.y} "
-                )
-                dbOperations.put(
-                    newboard.currentgame_state,
-                    GameState(newboard.currentGameid, newboard.currentGame_String)
-                )
-            } else {
-                newboard = newboard.copy(
-                    currentGame_String = newboard.currentGame_String +
-                            "${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}${'a'.plus(move.to.x)}${8 - move.to.y}$piece "
-                )
-                dbOperations.put(
-                    newboard.currentgame_state,
-                    GameState(newboard.currentGameid, newboard.currentGame_String)
-                )
-            }
-            println(newboard.currentGame_String + " na addTogameString")
+            newboard = newboard.copy(
+                currentGame_String = "${board.currentGame_String} ${move.piece}${'a'.plus(move.from.x)}${8 - move.from.y}" +
+                        "${'a'.plus(move.to.x)}${8 - move.to.y}$piece ",
+                currentgame_state = "currentgames",
+                firstMove = false
+            )
+            dbOperations.put(
+                newboard.currentgame_state,
+                GameState(newboard.currentGameid, newboard.currentGame_String)
+            )
         }
-    } else {
+    }
+     else {
         if (piece == null) {
             newboard = newboard.copy(
                 currentGame_String = newboard.currentGame_String +
@@ -130,7 +108,7 @@ fun MongoDbBoard.makeMove(move: Move, callFunc: callFunc) :MongoDbBoard{
     val newBoard=this.board.makeMove(move,callFunc)
     println(newBoard.turn)
     if (newBoard!=this.board){
-        return   this.copy(board=newBoard).addToGameString(move,callFunc,null)
+        return this.copy(board=newBoard).addToGameString(move,callFunc,null)
     }
     else return this
 }
@@ -148,6 +126,6 @@ fun MongoDbBoard.overidePiece(piece: Char, atX: Char, atY: Char):MongoDbBoard{
 }
 fun MongoDbBoard.forfeit():MongoDbBoard{
     val newBoard = board.copy(actionState = Commands.WIN)
-    dbOperations.put(board.currentGame_String,GameState(board.currentGameid,"f"));
+    dbOperations.put(board.currentGame_String,GameState(board.currentGameid,"f "));
     return copy(board = newBoard)
 }
