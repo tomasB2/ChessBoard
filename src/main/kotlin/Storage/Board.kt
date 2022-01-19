@@ -499,10 +499,8 @@ data class BoardClass internal constructor(
 //so tinhamos de tornar o make move numa função externa para tentar
 fun BoardClass.makeMove(move: Move, func: callFunc): BoardClass {
     val newboard= this
-    val toMove:Piece? = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
-    if(toMove == null) {
-        return copy(actionState = Commands.INVALID)
-    }
+    val toMove: Piece = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
+        ?: return copy(actionState = Commands.INVALID)
     println("estou na boardclass"+ newboard.turn+ " "+ toMove)
     if (toMove.team!=newboard.turn) return this
     val ret = checkConditionValidate(move,toMove,func)
@@ -511,23 +509,18 @@ fun BoardClass.makeMove(move: Move, func: callFunc): BoardClass {
     if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
     if(newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'K' ||
         newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'k'){
-        //try{
-            //fazer addToGameString se for valido no handler de eventos
-            // TODO: 10/01/2022
             return newboard.copy(actionState = Commands.WIN)
-       /* }catch (e:BoardAccessException){
-            throw BoardAccessException(e)
-        }*/
     }
+    val a="currentgames"
     newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)
     newboard.alterpieceat(atIndex(move.to.x,move.to.y),toMove)
-    if (newboard.getPieceAt(atIndex(move.to.x,move.to.y))!!.piece in "Kk")
+    if (newboard.getPieceAt(atIndex(move.from.x,move.from.y))!=null && newboard.getPieceAt(atIndex(move.from.x,move.from.y))!!.piece in "Kk")
         alterKingPos(Pos(move.to.x,move.to.y),newboard.getPieceAt(atIndex(move.to.x,move.to.y))!!.team)
-    if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) return newboard.copy(actionState = Commands.PROMOTE)
+    if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) return newboard.copy(turn=turn.next(),actionState = Commands.PROMOTE)
    // try {
         //addToGameString(move,func)//alterar do mesmo modo que o outro
   /*  }catch (e:BoardAccessException){
         throw BoardAccessException(e)
     }*/
-    return copy(turn = turn.next(), actionState = Commands.VALID)//tá mal Arão
+    return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a)//tá mal Arão
 }

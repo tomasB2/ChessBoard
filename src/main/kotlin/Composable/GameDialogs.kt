@@ -86,6 +86,7 @@ fun promotePawn(board: MongoDbBoard, onPieceChosen: (Char)->Unit, onCancel: () -
         }
         fun maybeOnNameEntered(){
             onPieceChosen(if(board.board.team== Team.BLACK)pieceChosen.value else pieceChosen.value.toUpperCase())
+
         }
         Column(modifier = Modifier.padding(16.dp)){
             Text(text = "Chose the piece", modifier = Modifier.padding(16.dp))

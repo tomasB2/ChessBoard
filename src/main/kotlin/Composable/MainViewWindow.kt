@@ -21,6 +21,8 @@ import androidx.compose.ui.window.WindowState
 import domane.Commands
 import domane.decodeMove
 import Storage.*
+import androidx.compose.runtime.LaunchedEffect
+import kotlinx.coroutines.delay
 import java.util.*
 
 
@@ -36,24 +38,33 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     val board = remember{ mutableStateOf(value = MongoDbBoard(BoardClass(), dbPair.second,dbPair.first)) }
     println(board.value.board.toString())
 
-    var moveString = ""
+    val moveString = remember{ mutableStateOf("")}
     val listOfBoard = remember{mutableStateOf(LinkedList<String>())}
 
     val listIndex = remember { mutableStateOf(value = 0) }
-
+    LaunchedEffect(board.value.board.actionState!=Commands.INVALID &&board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
+        println("Launching effect")
+        while (true) {
+            println("${board.value.board.currentGame_String}")
+            if (board.value.board.turn!=board.value.board.team && board.value.dbMode==DbMode.REMOTE) {
+                board.value = board.value.refresh()
+            }
+            delay(1_000)
+        }
+    }
     fun buildCoordinate():(String) -> Unit = {
-        if(moveString.length == 5){
+        if(moveString.value.length == 5){
             val move = moveString
-            moveString = ""
+            moveString.value = ""
             println(move)
         }
         else {
-            if(moveString.isEmpty()){
-                if(it[0] != ' ') moveString += it
+            if(moveString.value.isEmpty()){
+                if(it[0] != ' ') moveString.value += it
             }
             else{
-                if(moveString[1] != it[1] || moveString[2] != it[2])
-                    moveString = moveString + it[1] + it[2]
+                if(moveString.value[1] != it[1] || moveString.value[2] != it[2])
+                    moveString.value =moveString.value+ it[1] + it[2]
             }
         }
     }
@@ -70,20 +81,21 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     }
 
     fun makeMove():(callFunc: callFunc)->Unit= { //incorporar no buildCoordinate
-        if (moveString.length == 5) {
+        if (moveString.value.length == 5) {
             val currentBoard = board.value
             println(currentBoard.board.toString() + " ${board.value.hashCode()}")
-            val a= decodeMove(moveString.split(""),currentBoard.board)
+            val a= decodeMove(moveString.value.split(""),currentBoard.board)
             val newBoard = currentBoard.makeMove(a!!,it)
             println(newBoard.board.toString() + " ${board.value.hashCode()}")
             if(newBoard.board.actionState != Commands.INVALID){
                 if(newBoard.board.actionState != Commands.INVALID) addToList(board.value.board.toString())
-                if(newBoard.board.actionState != Commands.PROMOTE) moveString = ""
+                if(newBoard.board.actionState != Commands.PROMOTE) moveString.value = ""
             }
             println("--------- makeMove Window ----------")
             println("== ${currentBoard == newBoard}")
             println("=== ${currentBoard === newBoard}")
-            board.value = newBoard
+            board.value = board.value.copy(board=newBoard.board)
+            println(moveString);println(board.value.board.actionState)
         }
     }
 
@@ -123,8 +135,12 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
                             promotePawn(
                                 board = board.value,
                                 onPieceChosen = {
-                                    /*board.value.overidePiece(it, moveString.value[3], moveString.value[4])*/
-                                    moveString = "" },
+                                    println("i am here")
+                                    println(it)
+                                    println(moveString)
+                                    board.value= board.value.overidePiece(it, moveString.value[3], moveString.value[4])
+                                    moveString.value = ""
+                                },
                                 onCancel = onCancel()
                             )
                         }
@@ -142,15 +158,15 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
                                 board = board.value,
                                 onPieceChosen = {
                                     /*board.value.overidePiece(it, moveString.value[3], moveString.value[4])*/
-                                    moveString = "" },
+                                    moveString.value = "" },
                                 onCancel = onCancel()
                             )
                         }
                         if(board.value.board.actionState == Commands.WIN){
                             winDisplay(board.value, onCancel()) { displayState.value = "review" }
                         }
-                        exitPanel("Do you want to forfeit the game",onCancel())
-                        {/*board.value = board.value.forfeit()*/}
+                        exitPanel("Do you want to forfeit the game",onCancel()){board.value = board.value.forfeit()}
+
                     }
                 }
                 "review" -> buildReview(listOfBoard.value, onCancel())

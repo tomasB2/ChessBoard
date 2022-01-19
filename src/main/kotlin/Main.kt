@@ -9,7 +9,11 @@ private fun selectPath(dbInfo: DBConnectionInfo):Pair<DbMode, MongoClient>{
     return if (dbInfo.mode == DbMode.REMOTE) Pair(DbMode.REMOTE,createMongoClient(dbInfo.connectionString))
     else Pair(DbMode.LOCAL,createMongoClient())
 }
-
+fun onCloseRequest(s:String,onCloseRequested: () -> Unit){
+    if (s!= "forfeit"){
+        onCloseRequested
+    }
+}
 fun main() {
     val dbInfo = getDBConnectionInfo()
     val driver = selectPath(dbInfo)
@@ -17,7 +21,7 @@ fun main() {
     driver.second.use {
         val repoInfo = Pair(dbInfo.mode, DbOperations(it.getDatabase(dbInfo.dbName)))
         application {
-            mainWindow(repoInfo, ::exitApplication)
+            mainWindow(repoInfo, ::exitApplication )
         }
     }
 }
