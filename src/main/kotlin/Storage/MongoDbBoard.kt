@@ -113,11 +113,11 @@ fun MongoDbBoard.makeMove(move: Move, callFunc: callFunc) :MongoDbBoard{
 }
 fun MongoDbBoard.overidePiece(piece: Char, atX: Char, atY: Char):MongoDbBoard{
     if(board.actionState == Commands.PROMOTE){
-        println(atX.toInt() - 97)
+        println(atX.code- 97)
         println(8 - (atY.code-48))
         val newboard = board.copy(actionState = Commands.VALID)
-        newboard.alterpieceat(atIndex(atX.toInt() - 97, 8 - (atY.code-48)),
-            board.getPieceAt(atIndex(atX.toInt() - 97, 8 - (atY.code-48)))!!.copy(piece=piece))
+        newboard.alterpieceat(atIndex(atX.code - 97, 8 - (atY.code-48)),
+            board.getPieceAt(atIndex(atX.code - 97, 8 - (atY.code-48)))!!.copy(piece=piece))
         //board.updatemoves
         return copy(board = newboard)
     }
