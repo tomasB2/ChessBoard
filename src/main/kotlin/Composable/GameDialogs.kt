@@ -57,7 +57,7 @@ fun winDisplay(board: MongoDbBoard, onCancel: () -> Unit, ReviewGame: () -> Unit
     ){
         val name = remember { mutableStateOf(value = "") }
         Column(modifier = Modifier.padding(16.dp)){
-            Text(text = "${board.board.turn.next()} wins the game!", modifier = Modifier.padding(16.dp))
+            Text(text = "${board.board.turn} wins the game!", modifier = Modifier.padding(16.dp))
             Row{
                 Button(onClick = ReviewGame, modifier = Modifier.padding(16.dp)){
                     Text("Review")

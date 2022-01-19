@@ -77,7 +77,7 @@ fun buildReview(boards: List<String>, onCancel: () -> Unit) {
      Text("Before")
     }
         Button(onClick = {
-            if (currentIndex.value<currentBoard.value.indices.last) {
+            if (currentIndex.value in currentBoard.value.indices) {
                 currentIndex.value = currentIndex.value +1
             }
             if((currentIndex.value<=currentBoard.value.indices.last) && currentBoard.value != boards.last())currentBoard.value = boards[currentIndex.value]

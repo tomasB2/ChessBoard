@@ -22,6 +22,8 @@ import domane.Commands
 import domane.decodeMove
 import Storage.*
 import androidx.compose.runtime.LaunchedEffect
+import domane.Move
+import domane.Pos
 import kotlinx.coroutines.delay
 import java.util.*
 
@@ -139,7 +141,11 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
                                     println("i am here")
                                     println(it)
                                     println(moveString)
-                                    board.value= board.value.overidePiece(it, moveString.value[3], moveString.value[4])
+                                    board.value= board.value.overidePiece(it, moveString.value[3], moveString.value[4]).addToGameString(
+                                        Move(moveString.value[0], Pos(moveString.value[1].code-97,moveString.value[2].code-48),
+                                            Pos(moveString.value[3].code-97,moveString.value[4].code-48)
+                                        ),callFunc.PLAY,it
+                                    )
                                     moveString.value = ""
                                 },
                                 onCancel = onCancel()

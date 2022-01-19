@@ -52,7 +52,6 @@ data class MongoDbBoard(var board:BoardClass,
         else string[string.lastIndex-1]
         val b = sanitiseString(lessString,board) ?: return copy(board=board.copy(actionState = Commands.INVALID))
         val newboard= board.makeMove(b,callFunc.REFRESH)
-        //nova peça, promote interino
         println("piece"+ newpiece )
         return copy(board=newboard).overidePiece(newpiece,lessString[1],lessString[2]).addToGameString(b,callFunc.REFRESH,if (newpiece==lessString[0])null else newpiece)
 
