@@ -469,19 +469,15 @@ data class BoardClass internal constructor(
 
 */
 
-    fun checkConditionValidate(move: Move, toMove:Piece,func: callFunc): Commands {
-
-        if (func!=callFunc.REFRESH) {
+    fun checkConditionValidate(move: Move, toMove:Piece): Commands {
             if (move.from == move.to)
                 return Commands.INVALID
             if (turn != getPieceAt(atIndex(move.from.x, move.from.y))!!.team)
                 return Commands.INVALID
             if (getPieceAt(atIndex(move.to.x, move.to.y))!=null && getPieceAt(atIndex(move.from.x, move.from.y))?.team == getPieceAt(atIndex(move.to.x, move.to.y))!!.team)
                 return Commands.INVALID
-            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this)== Commands.INVALID)
+            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this) == Commands.INVALID)
                 return Commands.INVALID
-
-        }
         return Commands.VALID
     }
 
@@ -494,33 +490,58 @@ data class BoardClass internal constructor(
     }
 
 }
-// i think i found the secret sauce.
-// Pode ser que assim tinhamos acesso a um objeto igual ao inicial e a ele ligado
-//so tinhamos de tornar o make move numa função externa para tentar
-fun BoardClass.makeMove(move: Move, func: callFunc): BoardClass {
+fun BoardClass.makeMove(move: Move, func: callFunc,dbMode: DbMode): BoardClass {
+    if (func==callFunc.PLAY){
+        return move(move,dbMode)
+    }
+    else return Refresh(move)
+}
+fun BoardClass.Refresh(move: Move): BoardClass {
     val newboard= this
     val toMove: Piece = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
         ?: return copy(actionState = Commands.INVALID)
-    println("estou na boardclass"+ newboard.turn+ " "+ toMove)
     if (toMove.team!=newboard.turn) return this
-    val ret = checkConditionValidate(move,toMove,func)
-    if(ret == Commands.INVALID) return newboard.copy(actionState=Commands.INVALID)
-    if(func==callFunc.REFRESH && turn==newboard.team) return this
     if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
     if(newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'K' ||
         newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'k'){
-            return newboard.copy(actionState = Commands.WIN)
+        return newboard.copy(actionState = Commands.WIN)
     }
     val a="currentgames"
     newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)
     newboard.alterpieceat(atIndex(move.to.x,move.to.y),toMove)
     if (newboard.getPieceAt(atIndex(move.from.x,move.from.y))!=null && newboard.getPieceAt(atIndex(move.from.x,move.from.y))!!.piece in "Kk")
         alterKingPos(Pos(move.to.x,move.to.y),newboard.getPieceAt(atIndex(move.to.x,move.to.y))!!.team)
-    if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) return newboard.copy(turn=turn.next(),actionState = Commands.PROMOTE)
-   // try {
-        //addToGameString(move,func)//alterar do mesmo modo que o outro
-  /*  }catch (e:BoardAccessException){
-        throw BoardAccessException(e)
-    }*/
+    if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) {
+        return newboard.copy(actionState = Commands.PROMOTE)}
+    return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a)//tá mal Arão
+}
+fun BoardClass.move(move: Move,dbMode: DbMode):BoardClass{
+    val newboard= this
+    val toMove: Piece = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
+        ?: return copy(actionState = Commands.INVALID)
+    //println("estou na boardclass"+ newboard.turn+ " "+ toMove)
+    if (toMove.team!=newboard.turn) return this
+    if (dbMode==DbMode.REMOTE&&toMove.team!=newboard.team)return this
+    val ret = checkConditionValidate(move,toMove)
+    if(ret == Commands.INVALID) return newboard.copy(actionState=Commands.INVALID)
+    if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
+    if(newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'K' ||
+        newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'k'){
+        return newboard.copy(actionState = Commands.WIN)
+    }
+    val a="currentgames"
+    newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)
+    newboard.alterpieceat(atIndex(move.to.x,move.to.y),toMove)
+    if (newboard.getPieceAt(atIndex(move.from.x,move.from.y))!=null && newboard.getPieceAt(atIndex(move.from.x,move.from.y))!!.piece in "Kk")
+        alterKingPos(Pos(move.to.x,move.to.y),newboard.getPieceAt(atIndex(move.to.x,move.to.y))!!.team)
+    if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) {
+        println(newboard)
+        return newboard.copy(actionState = Commands.PROMOTE)}
+    // try {
+    //addToGameString(move,func)//alterar do mesmo modo que o outro
+    /*  }catch (e:BoardAccessException){
+          throw BoardAccessException(e)
+      }*/
+    println(copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a))
     return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a)//tá mal Arão
 }

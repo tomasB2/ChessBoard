@@ -140,7 +140,7 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
                                 onPieceChosen = {
                                     println("i am here")
                                     println(it)
-                                    println(moveString)
+                                    println("main view-$moveString")
                                     board.value= board.value.overidePiece(it, moveString.value[3], moveString.value[4]).addToGameString(
                                         Move(moveString.value[0], Pos(moveString.value[1].code-97,moveString.value[2].code-48),
                                             Pos(moveString.value[3].code-97,moveString.value[4].code-48)
