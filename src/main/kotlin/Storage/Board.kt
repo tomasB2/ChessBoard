@@ -492,9 +492,13 @@ data class BoardClass internal constructor(
 }
 fun BoardClass.makeMove(move: Move, func: callFunc,dbMode: DbMode): BoardClass {
     if (func==callFunc.PLAY){
+        println("estou a fazer play normal")
         return move(move,dbMode)
     }
-    else return Refresh(move)
+    else {
+        println("estou a fazer refresh")
+        return Refresh(move)
+    }
 }
 fun BoardClass.Refresh(move: Move): BoardClass {
     val newboard= this
