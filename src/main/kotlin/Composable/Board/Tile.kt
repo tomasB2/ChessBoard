@@ -23,10 +23,7 @@ fun tile(tileColor: Team, piece: Char, coordinate: Coordinate, buildCoordinate:(
     Box(
         modifier = Modifier.background(colorRGB)
             .size(100.dp)
-            .clickable {
-                buildCoordinate(piece + coordinate.toString())
-                //CoordinateString = buildCoodinate(CoordinateString, piece + coordinate.toString())
-            }
+            .clickable { buildCoordinate(piece + coordinate.toString()) }
     ){
         if(image != null){
             Image(

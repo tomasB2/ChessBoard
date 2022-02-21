@@ -15,9 +15,9 @@ data class Pos(val x:Int, val y:Int){
 /**
  * Class that contains the decoded move
  */
-data class Move(val piece:Char, val from:Pos, val to:Pos){
+data class Move(val piece:Char, val from:Pos, val to:Pos, val newPiece:Char? = null){
     override fun toString(): String {
-        return piece + from.toString() + to.toString()
+        return piece + from.toString() + to.toString() + (newPiece ?: "")
     }
 }
 

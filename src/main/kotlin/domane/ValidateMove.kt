@@ -12,8 +12,9 @@ val columns:Array<Char> = arrayOf('a','b','c','d','e','f','g','h')
  * Function that sanitises the command given
  * @return null or the sanitized command
  */
-fun sanitiseString(string: String?,board: BoardClass): Move? { //string[1] = piece, string[2]=arrayFrom, string[3]= whereFrom, string[4] = arrayTo, string[5] = whereTo
-    return if (string == null || string.length in 6..7) null //por enquanto, posteriormente adicionar hipotese de haver string com peça mas sem pos incial
+fun sanitiseString(string: String?,board: BoardClass): Move? {
+    if(string != null) println("decoding -> $string and length -> ${string.length}")
+    return if (string == null || string.length in 7..8) null
     else decodeMove(string.split(""), board)
 }
 
@@ -23,7 +24,18 @@ fun sanitiseString(string: String?,board: BoardClass): Move? { //string[1] = pie
  * @return The command properly separated
  */
 fun decodeMove(s: List<String>, board: BoardClass): Move? {
+    println("decode -> $s")
     return when (s.lastIndex) {
+        7 -> {//commando promote
+            println(8 - s[3].toInt() - 6)
+            println(8 - s[3].toInt())
+            Move(
+                piece = s[1][0].toUpperCase(),
+                from = Pos(s[2][0] - 'a', if(board.turn == Team.WHITE) 1 else 6),
+                to = Pos(s[4][0] - 'a', if(board.turn == Team.WHITE)0 else 7),
+                newPiece = s[6][0]
+            )
+        }
         6 -> {//commando completo
             if (((s[1][0].toUpperCase() !in piecesSet ||
                         s[4][0] !in columns) ||

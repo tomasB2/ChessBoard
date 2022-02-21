@@ -69,38 +69,33 @@ fun buildReview(boards: List<String>, onCancel: () -> Unit) {
             Spacer(modifier = Modifier.width(32.dp))
 
             Button(onClick = {
-              if (currentIndex.value>0) {
-                currentIndex.value = currentIndex.value - 1
+                if (currentIndex.value>0) {
+                    currentIndex.value = currentIndex.value - 1
+                }
+                if((currentIndex.value>=0) && currentBoard.value != boards.first() )currentBoard.value = boards[currentIndex.value]
+            }) {
+                Text("Before")
             }
-             if((currentIndex.value>=0) && currentBoard.value != boards.first())currentBoard.value = boards[currentIndex.value]
-    }) {
-     Text("Before")
-    }
-        Button(onClick = {
-            if (currentIndex.value in currentBoard.value.indices) {
-                currentIndex.value = currentIndex.value +1
+            Button(onClick = {
+                if (currentBoard.value != boards.last()) {
+                    currentIndex.value = currentIndex.value + 1
+                }
+                if(currentBoard.value != boards.last())currentBoard.value = boards[currentIndex.value]
+                println(currentBoard.value.indices.last)
+            }) {
+                Text("Next")
             }
-            if((currentIndex.value<=currentBoard.value.indices.last) && currentBoard.value != boards.last())currentBoard.value = boards[currentIndex.value]
-        println(currentBoard.value.indices.last)
-        }) {
-         Text("Next")
         }
     }
 }
-}
 
 @Composable
-fun buildButtons(board: MongoDbBoard, boardAction:(callFunc)->Unit) {
-Column {
-Button(onClick = {
-board.refresh()
-}) {
-Text("Refresh")
-}
-Button(onClick = {
-boardAction(callFunc.PLAY)
-}) {
-Text("Play")
-}
-}
+fun buildButtons(board: MongoDbBoard, boardAction:()->Unit) {
+    Column {
+        Button(onClick = {
+            boardAction()
+        }) {
+            Text("Forfeit")
+        }
+    }
 }

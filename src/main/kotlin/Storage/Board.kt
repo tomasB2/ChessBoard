@@ -15,7 +15,9 @@ enum class callFunc{
 fun atIndex(x:Int,y:Int):Int{
     return x + numberOfCol * y
 }
+
 const val numberOfCol=8
+
 /*class MongoDbBoard(private val db: DbOperations,private val dbInfo:DbMode): Board{
     private var mapDeMovesWhite:MutableSet<Move>  = HashSet()
     private var mapDeMovesBlack:MutableSet<Move> = HashSet()
@@ -368,35 +370,6 @@ data class BoardClass internal constructor(
         return string
     }
 
-    /**
-     * Val that contains the pieces to place
-     */
-
-
-    /**
-     * holds the current game id
-     */
-
-
-    /**
-     * list of moves
-     */
-
-    /**
-     * Team associated to opening or joining game
-     */
-
-    /**
-     * indicates the first move of the game
-     */
-
-
-    /**
-     * variable that holds the game_state
-     * Possible values [open], [currentgames], [closedgames]
-     */
-
-
     fun getWhiteKing()= whiteKingPos
     fun getBlackKing()=blackKingPos
     fun alterKingPos(pos:Pos, team: Team)= if (team==Team.WHITE)whiteKingPos=pos else blackKingPos=pos
@@ -404,80 +377,15 @@ data class BoardClass internal constructor(
     fun getPieceAt(i:Int): Piece? = this.linkedlistOfPieces[i]
     fun moves() = currentGame_String
 
-  /*  fun updatePieceMoves(white:MutableSet<Move>,black:MutableSet<Move>,moves:MutableSet<Pos>,movesBlack:MutableSet<Pos>) {
-        var i = 0
-        var j = 63
-        while (j >= i) {
-
-            if (linkedlistOfPieces[i] != null) {
-                linkedlistOfPieces[i]!!.mapDosMoves =
-                    checkValidMoves(
-                        linkedlistOfPieces[i]!!.piece,
-                        linkedlistOfPieces[i]!!.team,
-                        arrayzito[i]!!,
-                        this,
-                        white,
-                        black,
-                        moves,
-                        movesBlack
-                    )
-            }
-            if (linkedlistOfPieces[j] != null) {
-                linkedlistOfPieces[j]!!.mapDosMoves =
-                    checkValidMoves(
-                        linkedlistOfPieces[j]!!.piece,
-                        linkedlistOfPieces[j]!!.team,
-                        arrayzito[j]!!,
-                        this,
-                        white,
-                        black,
-                        moves,
-                        movesBlack
-                    )
-            }
-            i++
-            j--
-            actualKingMoves(
-                whiteKingPos,
-                Team.WHITE,
-                linkedlistOfPieces[atIndex(getWhiteKing().x, getWhiteKing().y)]!!.mapDosMoves,
-                white,
-                black,
-                moves,
-                movesBlack
-            )
-            actualKingMoves(
-                blackKingPos,
-                Team.BLACK,
-                linkedlistOfPieces[atIndex(getBlackKing().x, getBlackKing().y)]!!.mapDosMoves,
-                white,
-                black,
-                moves,
-                movesBlack
-            )
-            actualKingMoves(
-                whiteKingPos,
-                Team.WHITE,
-                linkedlistOfPieces[atIndex(getWhiteKing().x, getWhiteKing().y)]!!.mapDosMoves,
-                white,
-                black,
-                moves,
-                movesBlack
-            )
-        }
-    }
-
-*/
-
     fun checkConditionValidate(move: Move, toMove:Piece): Commands {
-            if (move.from == move.to)
-                return Commands.INVALID
-            if (turn != getPieceAt(atIndex(move.from.x, move.from.y))!!.team)
-                return Commands.INVALID
-            if (getPieceAt(atIndex(move.to.x, move.to.y))!=null && getPieceAt(atIndex(move.from.x, move.from.y))?.team == getPieceAt(atIndex(move.to.x, move.to.y))!!.team)
-                return Commands.INVALID
-            if (pieceMoves(move.piece, toMove.team, move.from, move.to, this) == Commands.INVALID)
-                return Commands.INVALID
+        if (move.from == move.to)
+            return Commands.INVALID
+        if (turn != getPieceAt(atIndex(move.from.x, move.from.y))!!.team)
+            return Commands.INVALID
+        if (getPieceAt(atIndex(move.to.x, move.to.y))!=null && getPieceAt(atIndex(move.from.x, move.from.y))?.team == getPieceAt(atIndex(move.to.x, move.to.y))!!.team)
+            return Commands.INVALID
+        if (pieceMoves(move.piece, toMove.team, move.from, move.to, this) == Commands.INVALID)
+            return Commands.INVALID
         return Commands.VALID
     }
 
@@ -504,20 +412,27 @@ fun BoardClass.Refresh(move: Move): BoardClass {
     val newboard= this
     val toMove: Piece = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
         ?: return copy(actionState = Commands.INVALID)
+    if(move.newPiece != null){
+        println(atIndex(move.from.x,move.from.y))
+        newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)
+        println(newboard.arrayzito)
+        newboard.alterpieceat(atIndex(move.to.x,move.to.y),toMove.copy(piece = move.newPiece))
+        return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = "currentgames")
+    }
+    println("passou")
     if (toMove.team!=newboard.turn) return this
     if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
     if(newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'K' ||
         newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'k'){
         return newboard.copy(actionState = Commands.WIN)
     }
-    val a="currentgames"
     newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)
     newboard.alterpieceat(atIndex(move.to.x,move.to.y),toMove)
     if (newboard.getPieceAt(atIndex(move.from.x,move.from.y))!=null && newboard.getPieceAt(atIndex(move.from.x,move.from.y))!!.piece in "Kk")
         alterKingPos(Pos(move.to.x,move.to.y),newboard.getPieceAt(atIndex(move.to.x,move.to.y))!!.team)
     if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) {
         return newboard.copy(actionState = Commands.PROMOTE)}
-    return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a)//tá mal Arão
+    return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = "currentgames")
 }
 fun BoardClass.move(move: Move,dbMode: DbMode):BoardClass{
     val newboard= this
@@ -531,7 +446,7 @@ fun BoardClass.move(move: Move,dbMode: DbMode):BoardClass{
     if(toMove.fristmove && (toMove.piece=='P' || toMove.piece=='p'))toMove.fristmove=false
     if(newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'K' ||
         newboard.getPieceAt(atIndex(move.to.x,move.to.y))?.piece == 'k'){
-        return newboard.copy(actionState = Commands.WIN)
+        return newboard.copy(turn = turn.next(), actionState = Commands.WIN)
     }
     val a="currentgames"
     newboard.alterpieceat(atIndex(move.from.x,move.from.y),null)

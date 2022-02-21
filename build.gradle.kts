@@ -19,6 +19,7 @@ repositories {
 dependencies {
     implementation("org.litote.kmongo:kmongo:4.3.0")
     implementation(compose.desktop.currentOs)
+    implementation("junit:junit:4.13.1")
 
 }
 
