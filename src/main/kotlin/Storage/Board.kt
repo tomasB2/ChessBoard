@@ -438,7 +438,6 @@ fun BoardClass.move(move: Move,dbMode: DbMode):BoardClass{
     val newboard= this
     val toMove: Piece = newboard.getPieceAt(atIndex(move.from.x,move.from.y))
         ?: return copy(actionState = Commands.INVALID)
-    //println("estou na boardclass"+ newboard.turn+ " "+ toMove)
     if (toMove.team!=newboard.turn) return this
     if (dbMode==DbMode.REMOTE&&toMove.team!=newboard.team)return this
     val ret = checkConditionValidate(move,toMove)
@@ -456,11 +455,6 @@ fun BoardClass.move(move: Move,dbMode: DbMode):BoardClass{
     if(toMove.piece.toUpperCase() == 'P' && (move.to.y == 0 || move.to.y == 7)) {
         println(newboard)
         return newboard.copy(actionState = Commands.PROMOTE)}
-    // try {
-    //addToGameString(move,func)//alterar do mesmo modo que o outro
-    /*  }catch (e:BoardAccessException){
-          throw BoardAccessException(e)
-      }*/
     println(copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a))
     return copy(turn = turn.next(), actionState = Commands.VALID, currentgame_state = a)//tá mal Arão
 }

@@ -28,7 +28,7 @@ import kotlinx.coroutines.delay
 import java.util.*
 
 
-@Composable //where refresh?
+@Composable
 fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) = Window(
     onCloseRequest = onCloseRequested,
     title = "Ultimate Chess",
@@ -38,12 +38,8 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     println("Composint main window")
     val displayState = remember{ mutableStateOf(value = "welcome") }
     val board = remember{ mutableStateOf(value = MongoDbBoard(BoardClass(), dbPair.second,dbPair.first)) }
-
     val moveString = remember{ mutableStateOf("")}
     val listOfBoard = remember{mutableStateOf(LinkedList<String>())}
-
-    val listIndex = remember { mutableStateOf(value = 0) }
-
     fun addToList(board: String) { listOfBoard.value.add(board) }
     LaunchedEffect(
         board.value.board.actionState!=Commands.PROMOTE
@@ -144,7 +140,6 @@ fun mainWindow(dbPair: Pair<DbMode,DbOperations>, onCloseRequested: () -> Unit) 
     }
 
     fun forfeit(){
-        println("aaaaa")
         board.value= board.value.addToGameString(
             Move('P', Pos(1,1),
                 Pos(1,1)

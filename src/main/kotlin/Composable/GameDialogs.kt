@@ -22,30 +22,6 @@ import Storage.MongoDbBoard
 import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
 
-@Composable
-fun exitPanel(message: String, onCancel: () -> Unit, exit: () -> Unit) {
-    Dialog(
-        onCloseRequest = onCancel,
-        title = "Exit",
-        resizable = false,
-        state = rememberDialogState(size = DpSize(Dp.Unspecified, Dp.Unspecified))
-    ){
-        val name = remember { mutableStateOf(value = "") }
-        Column(modifier = Modifier.padding(16.dp)){
-            Text(text = message, modifier = Modifier.padding(16.dp))
-            Row{
-                Button(onClick = exit, modifier = Modifier.padding(16.dp)){
-                    Text("Yes")
-                }
-                Button(onClick = onCancel, modifier = Modifier.padding(16.dp)){
-                    Text("No")
-                }
-            }
-        }
-    }
-}
-
-
 
 @Composable
 fun winDisplay(board: MongoDbBoard, onCancel: () -> Unit, ReviewGame: () -> Unit) {

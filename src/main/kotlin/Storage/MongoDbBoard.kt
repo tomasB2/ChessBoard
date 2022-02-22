@@ -7,31 +7,20 @@ data class MongoDbBoard(var board:BoardClass,
                         val dbMode: DbMode){
 
     fun open(id:String?):MongoDbBoard{
-        //  try {
         return if(id == null || dbOperations.read("open",id)!=null) return this
         else {
             dbOperations.post("open", GameState(id,""))
             dbOperations.post("currentgames", GameState(id,"  "))
             copy(board=board.copy(currentGameid = id,team = Team.WHITE,currentgame_state = "open"))
         }
-        /*  }catch (e:BoardAccessException){
-              throw  BoardAccessException(e)
-          }*/
     }
     fun join(id:String?):MongoDbBoard{
-        //try{
         return if(id != null && dbOperations.read("open",id)!=null) {
-            /*board.currentGameid = id
-            board.myTeam=if(dbMode==DbMode.LOCAL)Team.WHITE else Team.BLACK
-            board.currentgame_state = "currentgames"*/
             copy(board.copy(team=if(dbMode==DbMode.LOCAL)Team.WHITE else Team.BLACK,currentGameid = id,
                 currentgame_state = "currentgames"))
 
         }
         else this
-        /*  }catch (e:BoardAccessException){
-              throw BoardAccessException(e)
-          }*/
     }
     fun refresh():MongoDbBoard{
         if (dbMode==DbMode.LOCAL) {
@@ -46,7 +35,6 @@ data class MongoDbBoard(var board:BoardClass,
 
         val stringFromBoard = board.currentGame_String.split(" ")
         string.forEach {
-            println("this is it ->"+it)
             if(it == "f")
                 return copy(board = board.copy(actionState = Commands.WIN, turn = board.team))
         }
@@ -56,8 +44,6 @@ data class MongoDbBoard(var board:BoardClass,
             if(lessString == stringFromBoard[stringFromBoard.size-2]) return this
         }
         val sanitized = sanitiseString(lessString,board) ?: return this
-        println("this is the move1 -> $lessString")
-        println("sanitizeeee -> $sanitized")
         val newboard= board.makeMove(sanitized,callFunc.REFRESH,dbMode)
         return copy(newboard)
     }
@@ -121,7 +107,6 @@ fun MongoDbBoard.addToGameString(move: Move, func: callFunc,piece: Char?):MongoD
     return this.copy(board = newboard)
 }
 fun MongoDbBoard.makeMove(move: Move, callFunc: callFunc) :MongoDbBoard{
-    //shit incoming
     val read = dbOperations.read(board.currentgame_state,board.currentGameid)!!.movement
     val string = read.split(" ")
     string.forEach {
@@ -129,7 +114,6 @@ fun MongoDbBoard.makeMove(move: Move, callFunc: callFunc) :MongoDbBoard{
             return copy(board = board.copy(turn = board.team.next()))
         }
     }
-    //shit end
     val newBoard = this.board.makeMove(move,callFunc,dbMode)
 
     if (newBoard != this.board){
@@ -142,7 +126,6 @@ fun MongoDbBoard.makeMove(move: Move, callFunc: callFunc) :MongoDbBoard{
 }
 fun MongoDbBoard.overidePiece(piece: Char, atX: Char, atY: Char, move:String? = null):MongoDbBoard{
     if(board.actionState == Commands.PROMOTE){
-        println("this is the move -> $move")
         val newboard = board.copy(actionState = Commands.VALID, turn = board.turn.next(), currentGame_String = if(move != null) board.currentGame_String + "$move " else board.currentGame_String)
         newboard.alterpieceat(atIndex(atX.code - 97, 8 - (atY.code-48)),
             Piece(piece,board.turn,false, mutableSetOf()))
